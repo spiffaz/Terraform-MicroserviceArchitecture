@@ -1,12 +1,12 @@
 # client load balancer
 resource "aws_lb" "client_lb" {
-  name_prefix = "cl-"
+  name_prefix        = "cl-"
   internal           = false
   load_balancer_type = "application"
   security_groups    = [aws_security_group.client_lb.id]
   subnets            = aws_subnet.public.*.id
-  idle_timeout = 60
-  ip_address_type = "dualstack"
+  idle_timeout       = 60
+  ip_address_type    = "dualstack"
 
   tags = {
     "Name" = "${var.default_tags.project}-client-lb"
@@ -49,13 +49,13 @@ resource "aws_lb_listener" "client_lb" {
 
 # fruits load balancer
 resource "aws_lb" "fruits_lb" {
-  name_prefix = "fr-"
+  name_prefix        = "fr-"
   internal           = true
   load_balancer_type = "application"
   security_groups    = [aws_security_group.fruits_lb.id]
   subnets            = aws_subnet.private.*.id
-  idle_timeout = 60
-  ip_address_type = "ipv4"
+  idle_timeout       = 60
+  ip_address_type    = "ipv4"
 
   tags = {
     "Name" = "${var.default_tags.project}-fruits-lb"
@@ -98,13 +98,13 @@ resource "aws_lb_listener" "fruits_lb" {
 
 # vegetables load balancer
 resource "aws_lb" "vegetables_lb" {
-  name_prefix = "vg-"
+  name_prefix        = "vg-"
   internal           = true
   load_balancer_type = "application"
   security_groups    = [aws_security_group.vegetables_lb.id]
   subnets            = aws_subnet.private.*.id
-  idle_timeout = 60
-  ip_address_type = "ipv4"
+  idle_timeout       = 60
+  ip_address_type    = "ipv4"
 
   tags = {
     "Name" = "${var.default_tags.project}-vegetables-lb"

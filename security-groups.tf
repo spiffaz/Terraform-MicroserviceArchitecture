@@ -74,13 +74,13 @@ resource "aws_security_group" "fruits_lb" {
 
 # fruit lb inbound 
 resource "aws_security_group_rule" "fruits_lb_inbound_80" {
-  security_group_id = aws_security_group.client_lb.id
-  type              = "ingress"
-  protocol          = "tcp"
-  from_port         = 80
-  to_port           = 80
+  security_group_id        = aws_security_group.client_lb.id
+  type                     = "ingress"
+  protocol                 = "tcp"
+  from_port                = 80
+  to_port                  = 80
   source_security_group_id = aws_security_group.ecs_client_service.id
-  description       = "Allow HTTP traffic to fruit lb on port 80."
+  description              = "Allow HTTP traffic to fruit lb on port 80."
 }
 
 # fruits lb outbound
@@ -146,13 +146,13 @@ resource "aws_security_group" "vegetables_lb" {
 
 # vegetables lb inbound 
 resource "aws_security_group_rule" "vegetables_lb_inbound_80" {
-  security_group_id = aws_security_group.vegetables_lb.id
-  type              = "ingress"
-  protocol          = "tcp"
-  from_port         = 80
-  to_port           = 80
+  security_group_id        = aws_security_group.vegetables_lb.id
+  type                     = "ingress"
+  protocol                 = "tcp"
+  from_port                = 80
+  to_port                  = 80
   source_security_group_id = aws_security_group.ecs_client_service.id
-  description       = "Allow HTTP traffic to vegetables lb on port 80."
+  description              = "Allow HTTP traffic to vegetables lb on port 80."
 }
 
 # vegetables lb outbound
@@ -199,6 +199,48 @@ resource "aws_security_group_rule" "ecs_vegetables_service_allow_inbound_self" {
 # vegetables service outgoing traffic
 resource "aws_security_group_rule" "ecs_vegetables_service_allow_outbound" {
   security_group_id = aws_security_group.ecs_vegetables_service.id
+  type              = "egress"
+  protocol          = "-1"
+  from_port         = 0
+  to_port           = 0
+  cidr_blocks       = ["0.0.0.0/0"]
+  ipv6_cidr_blocks  = ["::/0"]
+  description       = "Allow all outbound traffic."
+}
+
+# security group for database server
+resource "aws_security_group" "database" {
+  name_prefix = "${var.default_tags.project}-database"
+  description = "Database security group."
+  vpc_id      = aws_vpc.main.id
+}
+
+
+# allow inbound database from fruit service
+resource "aws_security_group_rule" "database_allow_fruits_27017" {
+  security_group_id        = aws_security_group.database.id
+  type                     = "ingress"
+  protocol                 = "tcp"
+  from_port                = 27017
+  to_port                  = 27017
+  source_security_group_id = aws_security_group.ecs_fruits_service.id
+  description              = "Allow incoming traffic from the vegetables service."
+}
+
+# allow inbound database from vegetable service
+resource "aws_security_group_rule" "database_allow_vegetables_27017" {
+  security_group_id        = aws_security_group.database.id
+  type                     = "ingress"
+  protocol                 = "tcp"
+  from_port                = 27017
+  to_port                  = 27017
+  source_security_group_id = aws_security_group.ecs_vegetables_service.id
+  description              = "Allow incoming traffic from the fruits service."
+}
+
+# database outgoing traffic
+resource "aws_security_group_rule" "database_allow_outbound" {
+  security_group_id = aws_security_group.database.id
   type              = "egress"
   protocol          = "-1"
   from_port         = 0
