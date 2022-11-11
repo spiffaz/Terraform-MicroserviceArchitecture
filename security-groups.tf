@@ -254,38 +254,38 @@ resource "aws_security_group_rule" "database_allow_outbound" {
 resource "aws_security_group" "consul_server" {
   name_prefix = "${var.default_tags.project}-consul-server"
   description = "Security group for Consul servers"
-  vpc_id = aws_vpc.main.id
+  vpc_id      = aws_vpc.main.id
 }
 
 # consul 
 resource "aws_security_group_rule" "consul_server_allow_8300" {
- security_security_group_id = aws_security_group.consul_server.id
- type = "ingress"
- protocol = "tcp"
- from_port = 8300
- to_port = 8300
- self = true
- description = "Allow RPC traffic between consul servers for data replication"
+  security_group_id = aws_security_group.consul_server.id
+  type              = "ingress"
+  protocol          = "tcp"
+  from_port         = 8300
+  to_port           = 8300
+  self              = true
+  description       = "Allow RPC traffic between consul servers for data replication"
 }
 
 resource "aws_security_group_rule" "consul_server_allow_8301" {
- security_security_group_id = aws_security_group.consul_server.id
- type = "ingress"
- protocol = "tcp"
- from_port = 8301
- to_port = 8301
- self = true
- description = "Allow LAN gossip between consul servers for cluster membership, distributed health checks of agents"
+  security_group_id = aws_security_group.consul_server.id
+  type              = "ingress"
+  protocol          = "tcp"
+  from_port         = 8301
+  to_port           = 8301
+  self              = true
+  description       = "Allow LAN gossip between consul servers for cluster membership, distributed health checks of agents"
 }
 
 resource "aws_security_group_rule" "consul_server_allow_8302" {
- security_security_group_id = aws_security_group.consul_server.id
- type = "ingress"
- protocol = "tcp"
- from_port = 8302
- to_port = 8302
- self = true
- description = "Allow WAN gossip traffic between consul servers for data replication accross data centers"
+  security_group_id = aws_security_group.consul_server.id
+  type              = "ingress"
+  protocol          = "tcp"
+  from_port         = 8302
+  to_port           = 8302
+  self              = true
+  description       = "Allow WAN gossip traffic between consul servers for data replication accross data centers"
 }
 
 resource "aws_security_group_rule" "consul_server_allow_lb_8500" {

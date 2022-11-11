@@ -1,6 +1,6 @@
 # Consul Instance Role
 resource "aws_iam_role" "consul_instance" {
-  name_prefix        = "${var.default_tags.project}-role-"
+  name_prefix        = "consul-role-" #"${var.default_tags.project}-role-"
   assume_role_policy = data.aws_iam_policy_document.instance_trust_policy.json
 }
 

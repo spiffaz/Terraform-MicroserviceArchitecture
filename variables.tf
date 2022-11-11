@@ -21,13 +21,13 @@ variable "default_tags" {
 variable "public_subnet_count" {
   type        = number
   description = "Number of public subnets to create"
-  default     = 2
+  default     = 3
 }
 
 variable "private_subnet_count" {
   type        = number
   description = "Number of private subnets to create"
-  default     = 2
+  default     = 3
 }
 
 variable "client_task_definition_cpu" {
@@ -51,7 +51,7 @@ variable "ecs_client_service_count" {
 variable "database_private_ip" {
   type        = string
   description = "Private ip for database instance"
-  default     = "10.255.2.253"
+  default     = "10.255.3.253"
 }
 
 variable "ec2_key_pair" {
@@ -72,13 +72,13 @@ variable "database_service_message" {
 }
 
 variable "consul_server_count" {
-  type = number
+  type        = number
   description = "Count of consul servers"
-  default = 3
+  default     = 3
 }
 
 variable "consul_server_allowed_cidr_blocks" {
-  type = list(string)
+  type        = list(string)
   description = "List of valid IPv4 CIDR blocks that can access the consul servers from the public internet."
   default     = ["0.0.0.0/0"]
 }
@@ -87,4 +87,10 @@ variable "consul_server_allowed_cidr_blocks_ipv6" {
   type        = list(string)
   description = "List of valid IPv6 CIDR blocks that can access the consul servers from the public internet."
   default     = ["::/0"]
+}
+
+variable "consul_dc1_name" {
+  type        = string
+  description = "Name of Consul datacenter"
+  default     = "dc1"
 }

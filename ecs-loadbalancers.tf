@@ -184,10 +184,10 @@ resource "aws_lb_target_group" "consul_server_lb_targets" {
 
 # attach instances to consul target group
 resource "aws_lb_target_group_attachment" "consul_server" {
-  count = var.consul_server_count
+  count            = var.consul_server_count
   target_group_arn = aws_lb_target_group.consul_server_lb_targets.arn
-  target_id = aws_instance.consul_server[count.index].id
-  port = 8500
+  target_id        = aws_instance.consul_server[count.index].id
+  port             = 8500
 }
 
 # consul load balancer listener
