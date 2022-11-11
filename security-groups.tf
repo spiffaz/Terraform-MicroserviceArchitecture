@@ -249,3 +249,90 @@ resource "aws_security_group_rule" "database_allow_outbound" {
   ipv6_cidr_blocks  = ["::/0"]
   description       = "Allow all outbound traffic."
 }
+
+# consul server security group
+resource "aws_security_group" "consul_server" {
+  name_prefix = "${var.default_tags.project}-consul-server"
+  description = "Security group for Consul servers"
+  vpc_id = aws_vpc.main.id
+}
+
+# consul 
+resource "aws_security_group_rule" "consul_server_allow_8300" {
+ security_security_group_id = aws_security_group.consul_server.id
+ type = "ingress"
+ protocol = "tcp"
+ from_port = 8300
+ to_port = 8300
+ self = true
+ description = "Allow RPC traffic between consul servers for data replication"
+}
+
+resource "aws_security_group_rule" "consul_server_allow_8301" {
+ security_security_group_id = aws_security_group.consul_server.id
+ type = "ingress"
+ protocol = "tcp"
+ from_port = 8301
+ to_port = 8301
+ self = true
+ description = "Allow LAN gossip between consul servers for cluster membership, distributed health checks of agents"
+}
+
+resource "aws_security_group_rule" "consul_server_allow_8302" {
+ security_security_group_id = aws_security_group.consul_server.id
+ type = "ingress"
+ protocol = "tcp"
+ from_port = 8302
+ to_port = 8302
+ self = true
+ description = "Allow WAN gossip traffic between consul servers for data replication accross data centers"
+}
+
+resource "aws_security_group_rule" "consul_server_allow_lb_8500" {
+  security_group_id        = aws_security_group.consul_server.id
+  type                     = "ingress"
+  protocol                 = "tcp"
+  from_port                = 8500
+  to_port                  = 8500
+  source_security_group_id = aws_security_group.consul_server_lb.id
+  description              = "Allow HTTP traffic from Load Balancer to the Consul Server API."
+}
+
+resource "aws_security_group_rule" "consul_allow_outbound" {
+  security_group_id = aws_security_group.consul_server.id
+  type              = "egress"
+  protocol          = "-1"
+  from_port         = 0
+  to_port           = 0
+  cidr_blocks       = ["0.0.0.0/0"]
+  ipv6_cidr_blocks  = ["::/0"]
+  description       = "Allow all outbound traffic."
+}
+
+# Consul Server lb Security Group
+resource "aws_security_group" "consul_server_lb" {
+  name_prefix = "${var.default_tags.project}-consul-server-lb"
+  description = "Security Group for the consul server lb"
+  vpc_id      = aws_vpc.main.id
+}
+
+resource "aws_security_group_rule" "consul_server_lb_allow_80" {
+  security_group_id = aws_security_group.consul_server_lb.id
+  type              = "ingress"
+  protocol          = "tcp"
+  from_port         = 80
+  to_port           = 80
+  cidr_blocks       = flatten([var.consul_server_allowed_cidr_blocks, [var.vpc_cidr]]) # allow traffic from specified cidr and vpc
+  description       = "Allow HTTP traffic."
+}
+
+resource "aws_security_group_rule" "consul_server_lb_allow_outbound" {
+  security_group_id = aws_security_group.consul_server_lb.id
+  type              = "egress"
+  protocol          = "-1"
+  from_port         = 0
+  to_port           = 0
+  cidr_blocks       = ["0.0.0.0/0"]
+  ipv6_cidr_blocks  = ["::/0"]
+  description       = "Allow any outbound traffic."
+}
