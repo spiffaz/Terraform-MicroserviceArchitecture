@@ -97,12 +97,12 @@ variable "consul_dc1_name" {
 }
 
 variable "tfc_organization" {
-  type = string
+  type        = string
   description = "Terraform cloud organization set in the tfc variables or variable file"
 }
 
 variable "tfc_workspace_tag" {
-  type = string
+  type        = string
   description = "Name of tf cloud tag. All created resources share this"
 
 }

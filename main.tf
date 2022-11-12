@@ -12,7 +12,7 @@ terraform {
       tags = [var.tfc_workspace_tag]
     }
   }
-  
+
 }
 
 provider "aws" {
