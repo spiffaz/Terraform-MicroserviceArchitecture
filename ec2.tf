@@ -42,6 +42,7 @@ resource "aws_instance" "consul_server" {
     CONSUL_SERVER_DATACENTER  = var.consul_dc1_name
     AUTO_JOIN_TAG             = "Name"
     AUTO_JOIN_TAG_VALUE       = "${var.default_tags.project}-consul-server"
+    SERVICE_NAME_PREFIX       = local.project_tag
   }))
 
   depends_on = [aws_nat_gateway.nat]

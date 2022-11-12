@@ -6,12 +6,12 @@ terraform {
     }
   }
 
-  cloud {
-    organization = var.tfc_organization
-    workspaces {
-      tags = [var.tfc_workspace_tag]
-    }
-  }
+  #cloud {
+  # organization = var.tfc_organization
+  #workspaces {
+  # tags = [var.tfc_workspace_tag]
+  #}
+  #}
 
 }
 

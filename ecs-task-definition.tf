@@ -1,7 +1,7 @@
 module "client" {
   source                   = "hashicorp/consul-ecs/aws//modules/mesh-task"
   version                  = "0.4.1"
-  family                   = "${var.default_tags.project}-client"
+  family                   = "${local.project_tag}-client"
   requires_compatibilities = ["FARGATE"]
   memory                   = var.client_task_definition_memory
   cpu                      = var.client_task_definition_cpu
@@ -42,7 +42,7 @@ module "client" {
 
   # All settings required by the mesh-task module
   acls                           = true
-  acl_secret_name_prefix         = var.default_tags.project
+  acl_secret_name_prefix         = local.project_tag
   consul_datacenter              = var.consul_dc1_name
   consul_server_ca_cert_arn      = aws_secretsmanager_secret.consul_server_root_ca_cert.arn
   consul_client_token_secret_arn = module.consul_acl_controller.client_token_secret_arn
@@ -67,7 +67,7 @@ module "client" {
       # https://github.com/hashicorp/terraform-aws-consul-ecs/blob/main/modules/mesh-task/main.tf#L187
       # https://github.com/hashicorp/terraform-aws-consul-ecs/blob/v0.3.0/modules/mesh-task/variables.tf#L6-L10
       #destinationName = "${var.default_tags.project}-fruits"
-      destinationName = "${var.default_tags.project}-fruits"
+      destinationName = "${local.project_tag}-fruits"
       # This is the port that requests to this service will be sent to, and, the port that the proxy will be
       # listening on LOCALLY.
       # https://github.com/hashicorp/consul-ecs/blob/0817f073c665c3933e9455f477b18500616e7c47/config/schema.json#L326
@@ -78,7 +78,7 @@ module "client" {
       # https://github.com/hashicorp/consul-ecs/blob/85755adb288055df92c1880d30f1861db771ca63/subcommand/mesh-init/command_test.go#L77
       # looks like upstreams need different local bind ports, which begs the question of what a localBindPort is even doing
       # I guess this is just what the service points to that the envoy listener goes through
-      destinationName = "${var.default_tags.project}-vegetables"
+      destinationName = "${local.project_tag}-vegetables"
       localBindPort   = 1235
     }
   ]
@@ -95,7 +95,7 @@ module "fruits" {
   source  = "hashicorp/consul-ecs/aws//modules/mesh-task"
   version = "0.4.1"
 
-  family                   = "${var.default_tags.project}-fruits"
+  family                   = "${local.project_tag}-fruits"
   requires_compatibilities = ["FARGATE"]
   memory                   = var.client_task_definition_memory
   cpu                      = var.client_task_definition_cpu
@@ -134,7 +134,7 @@ module "fruits" {
     }
   ]
   acls                           = true
-  acl_secret_name_prefix         = var.default_tags.project
+  acl_secret_name_prefix         = local.project_tag
   consul_datacenter              = var.consul_dc1_name
   consul_server_ca_cert_arn      = aws_secretsmanager_secret.consul_server_root_ca_cert.arn
   consul_client_token_secret_arn = module.consul_acl_controller.client_token_secret_arn
@@ -159,12 +159,73 @@ module "fruits" {
   ]
 }
 
+module "fruits_v2" {
+  source  = "hashicorp/consul-ecs/aws//modules/mesh-task"
+  version = "0.4.1"
+
+  family                   = "${local.project_tag}-fruits-v2"
+  requires_compatibilities = ["FARGATE"]
+  # required for Fargate launch type
+  memory = 512
+  cpu    = 256
+
+  container_definitions = [
+    {
+      name      = "fruits"
+      image     = "nicholasjackson/fake-service:v0.23.1"
+      cpu       = 0 # take up proportional cpu
+      essential = true
+
+      portMappings = [
+        {
+          containerPort = 9090
+          hostPort      = 9090 # though, access to the ephemeral port range is needed to connect on EC2, the exact port is required on Fargate from a security group standpoint.
+          protocol      = "tcp"
+        }
+      ]
+
+      logConfiguration = local.fruits_v2_log_configuration
+
+      # Fake Service settings are set via Environment variables
+      environment = [
+        {
+          name  = "NAME"
+          value = "fruits"
+        },
+        {
+          name  = "MESSAGE"
+          value = "Hello from the fruits service version 2!"
+        },
+        {
+          name  = "UPSTREAM_URIS"
+          value = "http://${var.database_private_ip}:27017"
+        }
+      ]
+    }
+  ]
+
+  acls                           = true
+  acl_secret_name_prefix         = local.project_tag
+  consul_datacenter              = var.consul_dc1_name
+  consul_server_ca_cert_arn      = aws_secretsmanager_secret.consul_server_root_ca_cert.arn
+  consul_client_token_secret_arn = module.consul_acl_controller.client_token_secret_arn
+  gossip_key_secret_arn          = aws_secretsmanager_secret.consul_gossip_key.arn
+  port                           = "9090"
+  log_configuration              = local.fruits_v2_sidecars_log_configuration
+  tls                            = true
+  retry_join                     = local.server_private_ips
+  depends_on = [
+    module.consul_acl_controller
+  ]
+}
+
+
 # vegetables
 module "vegetables" {
   source  = "hashicorp/consul-ecs/aws//modules/mesh-task"
   version = "0.4.1"
 
-  family                   = "${var.default_tags.project}-vegetables"
+  family                   = "${local.project_tag}-vegetables"
   requires_compatibilities = ["FARGATE"]
   memory                   = var.client_task_definition_memory
   cpu                      = var.client_task_definition_cpu
@@ -203,7 +264,7 @@ module "vegetables" {
     }
   ]
   acls                           = true
-  acl_secret_name_prefix         = var.default_tags.project
+  acl_secret_name_prefix         = local.project_tag
   consul_datacenter              = var.consul_dc1_name
   consul_server_ca_cert_arn      = aws_secretsmanager_secret.consul_server_root_ca_cert.arn
   consul_client_token_secret_arn = module.consul_acl_controller.client_token_secret_arn

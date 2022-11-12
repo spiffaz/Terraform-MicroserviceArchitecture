@@ -1,6 +1,6 @@
 # client service
 resource "aws_ecs_service" "client" {
-  name            = "${var.default_tags.project}-client"
+  name            = "${local.project_tag}-client"
   cluster         = aws_ecs_cluster.main.arn
   task_definition = module.client.task_definition_arn
   desired_count   = var.ecs_client_service_count
@@ -23,7 +23,7 @@ resource "aws_ecs_service" "client" {
 
 # fruits service
 resource "aws_ecs_service" "fruits" {
-  name            = "${var.default_tags.project}-fruits"
+  name            = "${local.project_tag}-fruits"
   cluster         = aws_ecs_cluster.main.arn
   task_definition = module.fruits.task_definition_arn
   desired_count   = 2 #var.ecs_client_service_count
@@ -38,9 +38,26 @@ resource "aws_ecs_service" "fruits" {
   propagate_tags = "TASK_DEFINITION"
 }
 
+# v2 fruits
+resource "aws_ecs_service" "fruits_v2" {
+  name            = "${local.project_tag}-fruits-v2"
+  cluster         = aws_ecs_cluster.main.arn
+  task_definition = module.fruits_v2.task_definition_arn
+  desired_count   = 1
+  launch_type     = "FARGATE"
+
+  network_configuration {
+    subnets          = aws_subnet.private.*.id
+    assign_public_ip = false
+    security_groups  = [aws_security_group.ecs_fruits_service.id, aws_security_group.consul_client.id]
+  }
+
+  propagate_tags = "TASK_DEFINITION"
+}
+
 # vegetables service
 resource "aws_ecs_service" "vegetables" {
-  name            = "${var.default_tags.project}-vegetables"
+  name            = "${local.project_tag}-vegetables"
   cluster         = aws_ecs_cluster.main.arn
   task_definition = module.vegetables.task_definition_arn
   desired_count   = 3 #var.ecs_client_service_count
@@ -59,7 +76,7 @@ module "consul_acl_controller" {
   source  = "hashicorp/consul-ecs/aws//modules/acl-controller"
   version = "0.4.1"
 
-  name_prefix     = var.default_tags.project #- would get the error Error: expected length of name to be in the range (1 - 64), got Microservice-Architecture-project-consul-acl-controller-execution) so had to break our normal convention
+  name_prefix     = local.project_tag #- would get the error Error: expected length of name to be in the range (1 - 64), got Microservice-Architecture-project-consul-acl-controller-execution) so had to break our normal convention
   ecs_cluster_arn = aws_ecs_cluster.main.arn
   region          = var.region
 
