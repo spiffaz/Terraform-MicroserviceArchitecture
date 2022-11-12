@@ -5,6 +5,14 @@ terraform {
       version = "~> 3.0"
     }
   }
+
+  cloud {
+    organization = var.tfc_organization
+    workspaces {
+      tags = [var.tfc_workspace_tag]
+    }
+  }
+  
 }
 
 provider "aws" {

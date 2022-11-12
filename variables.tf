@@ -95,3 +95,14 @@ variable "consul_dc1_name" {
   description = "Name of Consul datacenter"
   default     = "dc1"
 }
+
+variable "tfc_organization" {
+  type = string
+  description = "Terraform cloud organization set in the tfc variables or variable file"
+}
+
+variable "tfc_workspace_tag" {
+  type = string
+  description = "Name of tf cloud tag. All created resources share this"
+
+}
